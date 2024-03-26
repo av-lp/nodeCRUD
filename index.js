@@ -1,28 +1,28 @@
 const http=require("http");
-//const mysql2=require("mysql2");
+const mysql2=require("mysql2");
 const fs=require("fs");
 const path=require("path");
 const url=require("url");
 const hbs=require("hbs");
 
 // create a connection to database
-// const connection=mysql2.createConnection({
-//     host:'localhost',
-//     user:'root',
-//     password:'lakshmi',
-//     database:'nodedb1'
-// })
+const db=mysql2.createConnection({
+    host:'localhost',
+    user:'root',
+    password:'lakshmi',
+    database:'nodedb1'
+})
 //  //connect to mysql database
 
-//  connection.connect((err)=>{
-//     if(err){
-//         console.error("Error connecting to MySQL:",err)
-//     }
-// else{
-//     console.log("connected to MySQL Database");
+ db.connect((err)=>{
+    if(err){
+        console.error("Error connecting to MySQL:",err)
+    }
+else{
+    console.log("connected to MySQL Database");
 
-// }
-// });
+}
+});
 
 
 //create http server
@@ -62,12 +62,12 @@ http.createServer((req,res)=>{
        req.on('data',chunk=>{
         body=body+chunk.toString();
        });
-       req.on('end'.at,()=>{
+       req.on('end',()=>{
         const formData=new URLSearchParams(body);
         const name=formData.get('name');
         const email=formData.get('email');
         const message=formData.get('message');
-        const createTableQuery="create table if not exists fromdata(id int auto_increament primnary key,name varchar(255),email varchar(255),message text)";
+        const createTableQuery="create table if not exists fromdata(id int auto_increment primary key,name varchar(255),email varchar(255),message text)";
         db.query(createTableQuery,(error,results)=>{
          if(error){
             console.error("error creating table:",error);
@@ -77,7 +77,7 @@ http.createServer((req,res)=>{
             console.log("Table created successfully")
          }
         });
-    })
+    
 
          const insertTableQuery=`insert into formdata(name,email,message) values(?,?,?)`;
          db.query(insertTableQuery,[name,email,message],(error,results)=>{
@@ -91,8 +91,8 @@ http.createServer((req,res)=>{
           res.end();
             }
          })
-        }
-   
+    })
+}
          else if(reqUrl.pathname==='/display-data'){
             db.query("select * from formdata",(error,results)=>{
                 if(error){
@@ -107,7 +107,7 @@ http.createServer((req,res)=>{
                 //using a template engine like Handlebars
                 const template=hbs.compile(templateData);
                 const renderedPage=template({data:results});
-                res.writeHead(200,{"content-type":text/html});
+                res.writeHead(200,{"content-type":"text/html"});
                 res.end(renderedPage);
             }
             });
@@ -130,7 +130,7 @@ http.createServer((req,res)=>{
                 //using a template engine like Handlebars
                 const template=hbs.compile(data);
                 const renderedForm=template({name:name});
-                res.writeHead(200,{"content-type":text/html});
+                res.writeHead(200,{"content-type":"text/html"});
                 res.end(renderedForm);
             }
             });
@@ -143,7 +143,7 @@ http.createServer((req,res)=>{
             req.on('data',chunk=>{
              body=body+chunk.toString();
             });
-            req.on('end'.at,()=>{
+            req.on('end',()=>{
              const formData=new URLSearchParams(body);
              const id=formData.get('id');
              const name=formData.get('name');
@@ -164,7 +164,7 @@ http.createServer((req,res)=>{
          })
         }
 
-    else if(reqUrl.pathname==='/data-delete'){
+    else if(reqUrl.pathname==='/data-deletion'){
             db.query("select name from formdata",(error,results)=>{
                 if(error){
                     console.error("Error fetching data:",error);
@@ -178,9 +178,9 @@ http.createServer((req,res)=>{
                 res.writeHead(500).end("Error loading form");
             }else{
                 //using a template engine like Handlebars
-                const template=hbs.compile(templateData);
-                const renderedPage=template({name:name});
-                res.writeHead(200,{"content-type":text/html});
+                const template=hbs.compile(data);
+                const renderedForm=template({name:name});
+                res.writeHead(200,{"content-type":"text/html"});
                 res.end(renderedForm);
             }
             });
